@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "709795868880",
+    "firebase_url": "https://rhack2018-bb703.firebaseio.com",
+    "project_id": "rhack2018-bb703",
+    "storage_bucket": "rhack2018-bb703.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709795868880:android:083b37618aa8d6ff",
+        "android_client_info": {
+          "package_name": "kobayashi.taku.taptappun.net.rstack2018"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "709795868880-9pdcnrn1oe6u01n6cs84iaj8mishf754.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kobayashi.taku.taptappun.net.rstack2018",
+            "certificate_hash": "caa44ccde86b939ab43c136b4e4bf838bec6b569"
+          }
+        },
+        {
+          "client_id": "709795868880-f0a202u1ihua2e0o2jdpfgft500g6s4q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6vLhPLtgpiqCBdD-5pQs8X4G3LNneyc0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "709795868880-f0a202u1ihua2e0o2jdpfgft500g6s4q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
