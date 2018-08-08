@@ -44,7 +44,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(String url, ResponseBody response) {
                         Log.d(Config.TAG, url);
                         try {
-                            Log.d(Config.TAG, response.string());
+                            String reponseBody = response.string();
+                            String sanitized = reponseBody.replaceAll("^\"(.*)\"$", "$1");
+                            Log.d(Config.TAG, sanitized);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
