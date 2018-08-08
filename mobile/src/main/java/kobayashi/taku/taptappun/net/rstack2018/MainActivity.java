@@ -13,6 +13,11 @@ import com.google.firebase.iid.InstanceIdResult;
 
 import net.taptappun.taku.kobayashi.runtimepermissionchecker.RuntimePermissionChecker;
 
+import java.io.IOException;
+import java.util.HashMap;
+
+import okhttp3.ResponseBody;
+
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
@@ -29,7 +34,24 @@ public class MainActivity extends AppCompatActivity {
         instanceIdTask.addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
             @Override
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                Log.d(Config.TAG, task.getResult().getToken());
+                HttpRequestTask request = new HttpRequestTask();
+                HashMap<String, Object> urlQueries = new HashMap<String, Object>();
+                urlQueries.put("type", "drink");
+                urlQueries.put("drink", "beer");
+                urlQueries.put("token", task.getResult().getToken());
+                request.addCallback(new HttpRequestTask.ResponseCallback() {
+                    @Override
+                    public void onSuccess(String url, ResponseBody response) {
+                        Log.d(Config.TAG, url);
+                        try {
+                            Log.d(Config.TAG, response.string());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                request.setParams(urlQueries);
+                request.execute(Config.ROOT_URL + "/demo/");
             }
         });
 
