@@ -1,12 +1,20 @@
 package kobayashi.taku.taptappun.net.rstack2018;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,6 +37,8 @@ public class MainActivity extends Activity {
         System.loadLibrary("native-lib");
     }
 
+    private MenuImageAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,30 +50,74 @@ public class MainActivity extends Activity {
         ImageView bgImage = (ImageView) findViewById(R.id.bg_image);
         bgImage.setImageResource(R.mipmap.hinoki_bg);
 
+        mAdapter = new MenuImageAdapter(this);
+        GridView menuGridView = (GridView) findViewById(R.id.menu_gridView);
+        menuGridView.setAdapter(mAdapter);
+        menuGridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                int nLastVisibleNum = firstVisibleItem + visibleItemCount;
+                if(nLastVisibleNum >= totalItemCount){
+                    nLastVisibleNum = totalItemCount + 1;
+                }
+                //メモリリーク対策
+                mAdapter.nonUsingImageRelease(firstVisibleItem - 1,nLastVisibleNum);
+            }
+        });
+        menuGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("注文しますか?")
+                        .setPositiveButton("はい", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                            }
+                        })
+                        .setNegativeButton("いいえ", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+
+                                HttpRequestTask request = new HttpRequestTask();
+                                HashMap<String, Object> urlQueries = new HashMap<String, Object>();
+                                urlQueries.put("type", "drink");
+                                urlQueries.put("drink", "beer");
+                                urlQueries.put("token", sp.getString("pushNotificationToken", ""));
+                                request.addCallback(new HttpRequestTask.ResponseCallback() {
+                                    @Override
+                                    public void onSuccess(String url, ResponseBody response) {
+                                        Log.d(Config.TAG, url);
+                                        try {
+                                            String reponseBody = response.string();
+                                            String sanitized = reponseBody.replaceAll("^\"(.*)\"$", "$1");
+                                            Log.d(Config.TAG, sanitized);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                                request.setParams(urlQueries);
+                                request.execute(Config.ROOT_URL + "/demo/");
+                            }
+                        })
+                        .show();
+            }
+        });
+
         Task<InstanceIdResult> instanceIdTask = FirebaseInstanceId.getInstance().getInstanceId();
         instanceIdTask.addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
             @Override
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                HttpRequestTask request = new HttpRequestTask();
-                HashMap<String, Object> urlQueries = new HashMap<String, Object>();
-                urlQueries.put("type", "drink");
-                urlQueries.put("drink", "beer");
-                urlQueries.put("token", task.getResult().getToken());
-                request.addCallback(new HttpRequestTask.ResponseCallback() {
-                    @Override
-                    public void onSuccess(String url, ResponseBody response) {
-                        Log.d(Config.TAG, url);
-                        try {
-                            String reponseBody = response.string();
-                            String sanitized = reponseBody.replaceAll("^\"(.*)\"$", "$1");
-                            Log.d(Config.TAG, sanitized);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                request.setParams(urlQueries);
-                request.execute(Config.ROOT_URL + "/demo/");
+                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putString("pushNotificationToken", task.getResult().getToken());
+                editor.apply();
             }
         });
 
@@ -73,6 +127,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mAdapter.release();
         Util.releaseImageView((ImageView) findViewById(R.id.bg_image));
     }
 
