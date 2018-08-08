@@ -1,9 +1,13 @@
 package kobayashi.taku.taptappun.net.rstack2018;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -18,7 +22,7 @@ import java.util.HashMap;
 
 import okhttp3.ResponseBody;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -28,7 +32,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
+
+        ImageView bgImage = (ImageView) findViewById(R.id.bg_image);
+        bgImage.setImageResource(R.mipmap.hinoki_bg);
 
         Task<InstanceIdResult> instanceIdTask = FirebaseInstanceId.getInstance().getInstanceId();
         instanceIdTask.addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
@@ -57,11 +67,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
-
         RuntimePermissionChecker.requestAllPermissions(this, 1);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Util.releaseImageView((ImageView) findViewById(R.id.bg_image));
     }
 
     /**
