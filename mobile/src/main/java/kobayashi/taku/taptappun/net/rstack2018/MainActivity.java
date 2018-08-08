@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.google.gson.Gson;
 
 import net.taptappun.taku.kobayashi.runtimepermissionchecker.RuntimePermissionChecker;
 
@@ -38,6 +40,7 @@ public class MainActivity extends Activity {
     }
 
     private MenuImageAdapter mAdapter;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,7 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
+        mHandler = new Handler();
 
         ImageView bgImage = (ImageView) findViewById(R.id.bg_image);
         bgImage.setImageResource(R.mipmap.hinoki_bg);
@@ -76,34 +80,12 @@ public class MainActivity extends Activity {
                         .setPositiveButton("はい", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-
+                                requestBeer();
                             }
                         })
                         .setNegativeButton("いいえ", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-
-                                HttpRequestTask request = new HttpRequestTask();
-                                HashMap<String, Object> urlQueries = new HashMap<String, Object>();
-                                urlQueries.put("type", "drink");
-                                urlQueries.put("drink", "beer");
-                                urlQueries.put("token", sp.getString("pushNotificationToken", ""));
-                                request.addCallback(new HttpRequestTask.ResponseCallback() {
-                                    @Override
-                                    public void onSuccess(String url, ResponseBody response) {
-                                        Log.d(Config.TAG, url);
-                                        try {
-                                            String reponseBody = response.string();
-                                            String sanitized = reponseBody.replaceAll("^\"(.*)\"$", "$1");
-                                            Log.d(Config.TAG, sanitized);
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                                request.setParams(urlQueries);
-                                request.execute(Config.ROOT_URL + "/demo/");
                             }
                         })
                         .show();
@@ -122,6 +104,53 @@ public class MainActivity extends Activity {
         });
 
         RuntimePermissionChecker.requestAllPermissions(this, 1);
+    }
+
+    private void requestBeer(){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+
+        HttpRequestTask request = new HttpRequestTask();
+        HashMap<String, Object> urlQueries = new HashMap<String, Object>();
+        urlQueries.put("type", "drink");
+        urlQueries.put("drink", "beer");
+        urlQueries.put("token", sp.getString("pushNotificationToken", ""));
+        request.addCallback(new HttpRequestTask.ResponseCallback() {
+            private RequestTemplate template;
+
+            @Override
+            public void onSuccess(String url, ResponseBody response) {
+                Gson gson = new Gson();
+                Log.d(Config.TAG, url);
+                try {
+                    String reponseBody = response.string();
+                    String sanitized = reponseBody.replaceAll("^\"(.*)\"$", "$1");
+                    template = gson.fromJson(sanitized, RequestTemplate.class);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertDialog recommendDialog = new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("一緒にこんなのもどうですか?")
+                                    .setMessage(Util.join(template.List, ","))
+                                    .setPositiveButton("注文する", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                        }
+                                    })
+                                    .setNegativeButton("いいえ、結構です。", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                        }
+                                    })
+                                    .show();
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        request.setParams(urlQueries);
+        request.execute(Config.ROOT_URL + "/demo/");
     }
 
     @Override

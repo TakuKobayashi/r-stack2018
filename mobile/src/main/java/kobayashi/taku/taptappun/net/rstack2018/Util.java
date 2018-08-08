@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class Util {
 
@@ -175,5 +176,23 @@ public class Util {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static String join(String[] list, String with) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < list.length; i++) {
+            if (i != 0) { buf.append(with);}
+            buf.append(list[i]);
+        }
+        return buf.toString();
+    }
+
+    public static String join(ArrayList<String> list, String with) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < list.size(); i++) {
+            if (i != 0) { buf.append(with);}
+            buf.append(list.get(i));
+        }
+        return buf.toString();
     }
 }
