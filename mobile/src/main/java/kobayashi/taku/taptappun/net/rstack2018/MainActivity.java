@@ -29,13 +29,9 @@ public class MainActivity extends AppCompatActivity {
         instanceIdTask.addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
             @Override
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                Log.d(Config.TAG, "00000000000000000000000000000000000000");
                 Log.d(Config.TAG, task.getResult().getToken());
-                Log.d(Config.TAG, task.getResult().getId());
             }
         });
-        Log.d(Config.TAG, "---------------------");
-        Log.d(Config.TAG, FirebaseInstanceId.getInstance().getId());
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
