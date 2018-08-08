@@ -1,3 +1,0 @@
-/workspace/project/RStack2018/mobile/.externalNativeBuild/cmake/debug/x86_64/CMakeFiles/edit_cache.dir
-/workspace/project/RStack2018/mobile/.externalNativeBuild/cmake/debug/x86_64/CMakeFiles/rebuild_cache.dir
-/workspace/project/RStack2018/mobile/.externalNativeBuild/cmake/debug/x86_64/CMakeFiles/native-lib.dir
