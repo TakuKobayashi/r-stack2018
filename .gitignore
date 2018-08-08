@@ -37,10 +37,21 @@ app/build/
 build/
 captures/
 
+.externalNativeBuild
+libwebp
+
 #NDK BUild
 *.so
 *.o
 *.o.d
 
-*.DS_Store
+Thumbs.db
 *~
+*#
+
+
+# Exclude temp nibs and swap files
+*~.nib
+*.swp
+ # Exclude OS X folder attributes
+.DS_Store
